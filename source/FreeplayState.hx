@@ -1,8 +1,8 @@
 package;
 
-import ui.Mobilecontrols;
+import flixel.addons.ui.FlxSlider;
 #if desktop
-import Discord.DiscordClient;
+//import Discord.DiscordClient;
 #end
 import flash.text.TextField;
 import flixel.FlxG;
@@ -22,10 +22,12 @@ class FreeplayState extends MusicBeatState
 
 	var selector:FlxText;
 	var curSelected:Int = 0;
-	var curDifficulty:Int = 1;
+	var curDifficulty:Int = 2;
 
 	var scoreText:FlxText;
 	var diffText:FlxText;
+	var speedSlider:FlxSlider;
+	var curSelectedSpeed:Float = 0;
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
 
@@ -36,19 +38,24 @@ class FreeplayState extends MusicBeatState
 
 	override function create()
 	{
-	  Paths.clearStoredMemory();
-		Paths.clearUnusedMemory();
-
 		var initSonglist = CoolUtil.coolTextFile(Paths.txt('freeplaySonglist'));
 
-		// for (i in 0...initSonglist.length)
-		// {
-		// 	songs.push(new SongMetadata(initSonglist[i], 1, 'gf'));
-		// }
+		for (i in 0...initSonglist.length)
+		{
+			songs.push(new SongMetadata(initSonglist[i], 1, 'gf'));
+		}
+
+		/* 
+			if (FlxG.sound.music != null)
+			{
+				if (!FlxG.sound.music.playing)
+					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			}
+		 */
 
 		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		//DiscordClient.changePresence("In the Menus", null);
 		#end
 
 		var isDebug:Bool = false;
@@ -57,29 +64,33 @@ class FreeplayState extends MusicBeatState
 		isDebug = true;
 		#end
 
+		if (StoryMenuState.weekUnlocked[2] || isDebug)
+			addWeek(['Bopeebo', 'Bopeebo-Remix', 'Fresh', 'Dadbattle'], 1, ['dad']);
+
+		if (StoryMenuState.weekUnlocked[2] || isDebug)
+			addWeek(['Spookeez', 'South', 'Monster'], 2, ['spooky']);
+
+		if (StoryMenuState.weekUnlocked[3] || isDebug)
+			addWeek(['Pico', 'Philly', 'Blammed'], 3, ['pico']);
+
+		if (StoryMenuState.weekUnlocked[4] || isDebug)
+			addWeek(['Satin-Panties', 'High', 'Milf'], 4, ['mom']);
+
+		if (StoryMenuState.weekUnlocked[5] || isDebug)
+			addWeek(['Cocoa', 'Eggnog', 'Winter-Horrorland'], 5, ['parents-christmas', 'parents-christmas', 'monster-christmas']);
+
+		if (StoryMenuState.weekUnlocked[6] || isDebug)
+			addWeek(['Senpai', 'Roses', 'Thorns'], 6, ['senpai', 'senpai', 'spirit']);
+
+		// LOAD MUSIC
+
+		// LOAD CHARACTERS
+
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBGBlue'));
 		add(bg);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
 		add(grpSongs);
-
-		for (i in 0...initSonglist.length)
-		{
-			var song = initSonglist[i].split(':');
-
-			var songName = song[0];
-			var songCharacter = song[1];
-			var weekName = song[2]; // should be string later??
-			// Sure.sure(songName != '');
-
-			trace(song);
-			if (songCharacter == null || songCharacter.length == 0)
-				trace('songCharacter in ' + songName + ' song is null or does not exist!');
-			if (weekName == null || weekName.length == 0)
-				trace('weekName in ' + songName + ' song is null or does not exist!');
-
-			songs.push(new SongMetadata(songName, Std.parseInt(weekName), songCharacter));
-		}
 
 		for (i in 0...songs.length)
 		{
@@ -111,12 +122,30 @@ class FreeplayState extends MusicBeatState
 
 		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
 		diffText.font = scoreText.font;
-		add(diffText);
+		//add(diffText);
 
 		add(scoreText);
 
 		changeSelection();
-		changeDiff();
+		//changeDiff();
+
+		speedSlider = new FlxSlider(this, "curSelectedSpeed", scoreText.x, scoreText.y + 200, -1, 1, Std.int(FlxG.width * 0.2), 25, 5, 0xFF000000);
+		speedSlider.minLabel.text = "0.5x\n(Easy)";
+		speedSlider.minLabel.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER);
+		speedSlider.maxLabel.text = "2x\n(Hard)";
+		speedSlider.maxLabel.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER);
+		speedSlider.nameLabel.text = "1x\n(Normal)";
+		speedSlider.nameLabel.y = speedSlider.minLabel.y;
+		speedSlider.nameLabel.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER);
+		speedSlider.valueLabel.y -= 60;
+		speedSlider.valueLabel.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, CENTER);
+
+		var sliderTitle = new FlxText(scoreText.x + 60, speedSlider.y - 60, 0, "Song Speed", 24);
+		sliderTitle.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT);
+
+		add(speedSlider);
+		add(sliderTitle);
+		FlxG.mouse.visible = true;
 
 		// FlxG.sound.playMusic(Paths.music('title'), 0);
 		// FlxG.sound.music.fadeIn(2, 0, 0.8);
@@ -145,8 +174,6 @@ class FreeplayState extends MusicBeatState
 			trace(md);
 		 */
 
-		Mobilecontrols.addVirtualPad(FULL, A_B);
-
 		super.create();
 	}
 
@@ -174,6 +201,13 @@ class FreeplayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		if (curSelectedSpeed == 0)
+			speedSlider.valueLabel.text = "1.0";
+		else if (curSelectedSpeed > 0)
+			speedSlider.valueLabel.text = Std.string(curSelectedSpeed + 1);
+		else
+			speedSlider.valueLabel.text = Std.string(Math.round((1 / (1 + -curSelectedSpeed)) * 100) / 100);
+
 		if (FlxG.sound.music.volume < 0.7)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
@@ -199,10 +233,14 @@ class FreeplayState extends MusicBeatState
 			changeSelection(1);
 		}
 
+		// if (controls.LEFT_P)
+		// 	changeDiff(-1);
+		// if (controls.RIGHT_P)
+		// 	changeDiff(1);
 		if (controls.LEFT_P)
-			changeDiff(-1);
+			changeSpeed(-0.1);
 		if (controls.RIGHT_P)
-			changeDiff(1);
+			changeSpeed(0.1);
 
 		if (controls.BACK)
 		{
@@ -215,19 +253,37 @@ class FreeplayState extends MusicBeatState
 
 			trace(poop);
 
+			if (curSelectedSpeed == 0)
+				Conductor.playbackSpeed = 1.0;
+			else if (curSelectedSpeed > 0)
+				Conductor.playbackSpeed = 1 + curSelectedSpeed;
+			else
+				Conductor.playbackSpeed = 1 / (1 + -curSelectedSpeed);
+
+			FlxG.mouse.visible = false;
+
 			PlayState.SONG = Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());
 			PlayState.isStoryMode = false;
 			PlayState.storyDifficulty = curDifficulty;
 
 			PlayState.storyWeek = songs[curSelected].week;
+			//Conductor.playbackSpeed = 1.5;
 			trace('CUR WEEK' + PlayState.storyWeek);
 			LoadingState.loadAndSwitchState(new PlayState());
 		}
 	}
 
+	function changeSpeed(change:Float)
+	{
+		if (change < 0)
+			curSelectedSpeed = Math.max(curSelectedSpeed+change, -1);
+		else
+			curSelectedSpeed = Math.min(curSelectedSpeed+change, 1);
+	}
+
 	function changeDiff(change:Int = 0)
 	{
-		curDifficulty += change;
+		/*curDifficulty += change;
 
 		if (curDifficulty < 0)
 			curDifficulty = 2;
@@ -246,16 +302,11 @@ class FreeplayState extends MusicBeatState
 				diffText.text = 'NORMAL';
 			case 2:
 				diffText.text = "HARD";
-		}
+		}*/
 	}
 
 	function changeSelection(change:Int = 0)
 	{
-		#if (!switch && newgrounds)
-		NGio.logEvent('Fresh');
-		#end
-
-		// NGio.logEvent('Fresh');
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		curSelected += change;
