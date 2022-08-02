@@ -1,13 +1,12 @@
 package;
 
 import Song.SwagSong;
-import flixel.FlxG;
+import flixel.FlxG
 
 /**
  * ...
  * @author
  */
-
 typedef BPMChangeEvent =
 {
 	var stepTime:Int;
@@ -23,23 +22,16 @@ class Conductor
 	public static var songPosition:Float;
 	public static var lastSongPos:Float;
 	public static var offset:Float = 0;
+	public static var masterVolume:Float = 0;
+	public static var playbackSpeed:Float = 1.0;
 
 	public static var safeFrames:Int = 10;
 	public static var safeZoneOffset:Float = (safeFrames / 60) * 1000; // is calculated in create(), is safeFrames in milliseconds
 
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 
-	public static var timeScale:Float = Conductor.safeZoneOffset / 166;
-
 	public function new()
 	{
-	}
-
-	public static function recalculateTimings()
-	{
-		Conductor.safeFrames = FlxG.save.data.frames;
-		Conductor.safeZoneOffset = Math.floor((Conductor.safeFrames / 60) * 1000);
-		Conductor.timeScale = Conductor.safeZoneOffset / 166;
 	}
 
 	public static function mapBPMChanges(song:SwagSong)
@@ -47,11 +39,12 @@ class Conductor
 		bpmChangeMap = [];
 
 		var curBPM:Int = song.bpm;
+		masterVolume = song.vocalVolume;
 		var totalSteps:Int = 0;
 		var totalPos:Float = 0;
 		for (i in 0...song.notes.length)
 		{
-			if(song.notes[i].changeBPM && song.notes[i].bpm != curBPM)
+			if (song.notes[i].changeBPM && song.notes[i].bpm != curBPM)
 			{
 				curBPM = song.notes[i].bpm;
 				var event:BPMChangeEvent = {
@@ -75,5 +68,7 @@ class Conductor
 
 		crochet = ((60 / bpm) * 1000);
 		stepCrochet = crochet / 4;
+		// DD: Try to account for bpm in safezoneoffset, I guess. Not sure if this actually does anything noticeable.
+		safeZoneOffset = (safeFrames / 60) * 1000 + stepCrochet / 4;
 	}
 }
