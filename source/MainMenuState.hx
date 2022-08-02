@@ -1,8 +1,7 @@
 package;
 
-import ui.Mobilecontrols;
 #if desktop
-import Discord.DiscordClient;
+// import Discord.DiscordClient;
 #end
 import flixel.FlxG;
 import flixel.FlxObject;
@@ -29,19 +28,24 @@ class MainMenuState extends MusicBeatState
 	var menuItems:FlxTypedGroup<FlxSprite>;
 
 	#if !switch
-	var optionShit:Array<String> = ['story mode', 'freeplay', 'donate', 'options'];
+	// var optionShit:Array<String> = ['story mode', 'freeplay', 'donate', 'options'];
+	var optionShit:Array<String> = ['freeplay', 'donate'];
 	#else
-	var optionShit:Array<String> = ['story mode', 'freeplay'];
+	var optionShit:Array<String> = ['freeplay'];
 	#end
 
 	var magenta:FlxSprite;
 	var camFollow:FlxObject;
 
+	var checkArrowVocals:FlxText;
+	var checkTimedVocals:FlxText;
+	var checkPitchShift:FlxText;
+
 	override function create()
 	{
 		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		// DiscordClient.changePresence("In the Menus", null);
 		#end
 
 		transIn = FlxTransitionableState.defaultTransIn;
@@ -57,7 +61,7 @@ class MainMenuState extends MusicBeatState
 		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(Paths.image('menuBG'));
 		bg.scrollFactor.x = 0;
 		bg.scrollFactor.y = 0.18;
-		bg.setGraphicSize(Std.int(bg.width * 1.15));
+		bg.setGraphicSize(Std.int(bg.width * 1.1));
 		bg.updateHitbox();
 		bg.screenCenter();
 		bg.antialiasing = true;
@@ -69,7 +73,7 @@ class MainMenuState extends MusicBeatState
 		magenta = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
 		magenta.scrollFactor.x = 0;
 		magenta.scrollFactor.y = 0.18;
-		magenta.setGraphicSize(Std.int(magenta.width * 1.15));
+		magenta.setGraphicSize(Std.int(magenta.width * 1.1));
 		magenta.updateHitbox();
 		magenta.screenCenter();
 		magenta.visible = false;
@@ -99,7 +103,7 @@ class MainMenuState extends MusicBeatState
 
 		FlxG.camera.follow(camFollow, null, 0.06);
 
-		var versionShit:FlxText = new FlxText(5, FlxG.height - 18, 0, "v" + Application.current.meta.get('version') + " android port v2", 12);
+		var versionShit:FlxText = new FlxText(5, FlxG.height - 18, 0, "v" + Application.current.meta.get('version'), 12);
 		versionShit.scrollFactor.set();
 		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(versionShit);
@@ -108,7 +112,24 @@ class MainMenuState extends MusicBeatState
 
 		changeItem();
 
-		Mobilecontrols.addVirtualPad(UP_DOWN, A_B);
+        Mobilecontrols.addvirtualPad(UP_DOWN, A_B);
+        
+		checkArrowVocals = new FlxText(5, FlxG.height - 110, 0, "", 12);
+		checkArrowVocals.scrollFactor.set();
+		checkArrowVocals.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(checkArrowVocals);
+
+		checkTimedVocals = new FlxText(5, FlxG.height - 80, 0, "", 12);
+		checkTimedVocals.scrollFactor.set();
+		checkTimedVocals.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(checkTimedVocals);
+
+		checkPitchShift = new FlxText(5, FlxG.height - 50, 0, "", 12);
+		checkPitchShift.scrollFactor.set();
+		checkPitchShift.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		#if (desktop && !hl)
+		add(checkPitchShift);
+		#end
 
 		super.create();
 	}
@@ -117,6 +138,16 @@ class MainMenuState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
+		checkArrowVocals.text = "Arrow-Based Vocals (Press I to toggle): " + TitleState.arrowVocals;
+
+		checkTimedVocals.text = "Vocals Timed to Key Press (Press O to toggle): " + TitleState.timedVocals;
+
+		checkPitchShift.text = "Speed Changes Don't Affect Pitch (Press P to toggle): ";
+		if (TitleState.pitchShift)
+			checkPitchShift.text += "true (Warning: doesn't sound good)";
+		else
+			checkPitchShift.text += "false";
+
 		if (FlxG.sound.music.volume < 0.8)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
@@ -124,6 +155,36 @@ class MainMenuState extends MusicBeatState
 
 		if (!selectedSomethin)
 		{
+			if (FlxG.keys.justPressed.I)
+			{
+				FlxG.sound.play(Paths.sound('scrollMenu'));
+				if (TitleState.arrowVocals)
+					TitleState.arrowVocals = false;
+				else
+					TitleState.arrowVocals = true;
+				FlxG.save.data.arrowVocals = TitleState.arrowVocals;
+				FlxG.save.flush();
+			}
+			if (FlxG.keys.justPressed.O)
+			{
+				FlxG.sound.play(Paths.sound('scrollMenu'));
+				if (TitleState.timedVocals)
+					TitleState.timedVocals = false;
+				else
+					TitleState.timedVocals = true;
+				FlxG.save.data.timedVocals = TitleState.timedVocals;
+				FlxG.save.flush();
+			}
+			if (FlxG.keys.justPressed.P)
+			{
+				FlxG.sound.play(Paths.sound('scrollMenu'));
+				if (TitleState.pitchShift)
+					TitleState.pitchShift = false;
+				else
+					TitleState.pitchShift = true;
+				FlxG.save.data.pitchShift = TitleState.pitchShift;
+				FlxG.save.flush();
+			}
 			if (controls.UP_P)
 			{
 				FlxG.sound.play(Paths.sound('scrollMenu'));

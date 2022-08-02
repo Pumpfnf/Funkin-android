@@ -8,24 +8,19 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
 // import Config;
 
-import flixel.util.FlxSave;
 class OptionsMenu extends MusicBeatState
 {
 	var selector:FlxText;
 	var curSelected:Int = 0;
 
+	var controlsStrings:Array<String> = [];
+
 	private var grpControls:FlxTypedGroup<Alphabet>;
-
-	var menuItems:Array<String> = ['preferences', 'controls', 'about', 'discord', 'special thanks', 'exit'];
-
-	var notice:FlxText;
 
 	override function create()
 	{
-	  Paths.clearStoredMemory();
-		Paths.clearUnusedMemory();
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic('assets/images/menuDesat.png');
-		//controlsStrings = CoolUtil.coolTextFile('assets/data/controls.txt');
+		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		controlsStrings = CoolUtil.coolTextFile(Paths.txt('controls'));
 		menuBG.color = 0xFFea71fd;
 		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
 		menuBG.updateHitbox();
@@ -33,65 +28,86 @@ class OptionsMenu extends MusicBeatState
 		menuBG.antialiasing = true;
 		add(menuBG);
 
-		grpControls = new FlxTypedGroup<Alphabet>();
-		add(grpControls);
+		/* 
+			grpControls = new FlxTypedGroup<Alphabet>();
+			add(grpControls);
 
-		for (i in 0...menuItems.length)
-		{ 
-			var controlLabel:Alphabet = new Alphabet(0, (70 * i) + 30, menuItems[i], true, false);
-			controlLabel.screenCenter();
-			controlLabel.y = (100 * i) + 70;
-			//controlLabel.isMenuItem = true;
-			//controlLabel.targetY = i;
-			grpControls.add(controlLabel);
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
-		}
+			for (i in 0...controlsStrings.length)
+			{
+				if (controlsStrings[i].indexOf('set') != -1)
+				{
+					var controlLabel:Alphabet = new Alphabet(0, (70 * i) + 30, controlsStrings[i].substring(3) + ': ' + controlsStrings[i + 1], true, false);
+					controlLabel.isMenuItem = true;
+					controlLabel.targetY = i;
+					grpControls.add(controlLabel);
+				}
+				// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
+			}
 
-		Mobilecontrols.addVirtualPad(UP_DOWN, A_B);
-
-		changeSelection();
+        Mobilecontrols.addvirtualPad(UP_DOWN, A_B);
+        
+        changeSelection();
 		
 		super.create();
+	}
+
+		openSubState(new OptionsSubState());
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if (controls.ACCEPT)
-		{
-			var daSelected:String = menuItems[curSelected];
 
-			switch (daSelected)
+		/* 
+			if (controls.ACCEPT)
 			{
-				case "preferences":
-					FlxG.switchState(new option.PreferencesState());
-				case "controls":
-					FlxG.switchState(new ControlEditorState());
-				case "about":
-					FlxG.switchState(new option.AboutState());
-				case "exit":
-					FlxG.switchState(new MainMenuState());
-				case "discord":
-					FlxG.openURL('https://discord.gg/eGwJnUvZ9H');
-				case "special thanks":
-					FlxG.switchState(new option.CreditState());
-					//FlxG.openURL('https://youtu.be/2IdJzGZ70r4');
+				changeBinding();
 			}
-		}
 
+			if (isSettingControl)
+				waitingInput();
+			else
+			{
+			
+		}
+		
 		if (controls.BACK #if android || FlxG.android.justReleased.BACK #end) {
 			FlxG.switchState(new MainMenuState());
 		}
 
-		if (controls.UP_P)
-			changeSelection(-1);
-		if (controls.DOWN_P)
-			changeSelection(1);
+                if (controls.UP_P)
+					changeSelection(-1);
+				if (controls.DOWN_P)
+					changeSelection(1);
+			}
+		 */
+	}
 
+	function waitingInput():Void
+	{
+		if (FlxG.keys.getIsDown().length > 0)
+		{
+			PlayerSettings.player1.controls.replaceBinding(Control.LEFT, Keys, FlxG.keys.getIsDown()[0].ID, null);
+		}
+		// PlayerSettings.player1.controls.replaceBinding(Control)
+	}
+
+	var isSettingControl:Bool = false;
+
+	function changeBinding():Void
+	{
+		if (!isSettingControl)
+		{
+			isSettingControl = true;
+		}
 	}
 
 	function changeSelection(change:Int = 0)
 	{
+		#if !switch
+		//NGio.logEvent('Fresh');
+		#end
+
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		curSelected += change;
@@ -100,6 +116,8 @@ class OptionsMenu extends MusicBeatState
 			curSelected = grpControls.length - 1;
 		if (curSelected >= grpControls.length)
 			curSelected = 0;
+
+		// selector.y = (70 * curSelected) + 30;
 
 		var bullShit:Int = 0;
 
@@ -118,9 +136,4 @@ class OptionsMenu extends MusicBeatState
 			}
 		}
 	}
-
-	override function closeSubState()
-		{
-			super.closeSubState();
-		}	
 }
