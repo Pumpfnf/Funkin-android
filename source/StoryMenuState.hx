@@ -30,12 +30,12 @@ class StoryMenuState extends MusicBeatState
 		['Pico', 'Philly', "Blammed"],
 		['Satin-Panties', "High", "Milf"],
 		['Cocoa', 'Eggnog', 'Winter-Horrorland'],
-		['Senpai', 'Roses', 'Thorns'],
+		['Senpai', 'Roses', 'Thorns']
 		['ugh', 'guns', 'stress']
 	];
 	var curDifficulty:Int = 1;
 
-	public static var weekUnlocked:Array<Bool> = [true, true, true, true, true, true, true, true];
+	public static var weekUnlocked:Array<Bool> = [true, true, true, true, true, true, true];
 
 	var weekCharacters:Array<Dynamic> = [
 		['dad', 'bf', 'gf'],
@@ -44,7 +44,7 @@ class StoryMenuState extends MusicBeatState
 		['pico', 'bf', 'gf'],
 		['mom', 'bf', 'gf'],
 		['parents-christmas', 'bf', 'gf'],
-		['senpai', 'bf', 'gf'],
+		['senpai', 'bf', 'gf']
 		['tankman', 'bf', 'gf']
 	];
 
@@ -55,7 +55,7 @@ class StoryMenuState extends MusicBeatState
 		"PICO",
 		"MOMMY MUST MURDER",
 		"RED SNOW",
-		"hating simulator ft. moawling",
+		"hating simulator ft. moawling"
 		"TANKMAN"
 	];
 
@@ -77,9 +77,6 @@ class StoryMenuState extends MusicBeatState
 
 	override function create()
 	{
-	  Paths.clearStoredMemory();
-		Paths.clearUnusedMemory();
-	
 		transIn = FlxTransitionableState.defaultTransIn;
 		transOut = FlxTransitionableState.defaultTransOut;
 
@@ -122,7 +119,7 @@ class StoryMenuState extends MusicBeatState
 		
 		#if desktop
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		//DiscordClient.changePresence("In the Menus", null);
 		#end
 
 		for (i in 0...weekData.length)
